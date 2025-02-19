@@ -21,11 +21,11 @@ if __name__ == "__main__":
             for arch in source.arch:
                 metadata = Metadata()
                 metadata.packager = ", ".join([f"{maintainer.name} <{maintainer.email}>" for maintainer in config.maintainers])
-                metadata.arch = arch
+                metadata.arch = arch if arch not in source.arch_translation else source.arch_translation[arch]
                 files, metadata = get_source(source, metadata)
                 logging.debug(f"Metadata: \n{metadata}")
                 if files:
-                    metadata.arch = arch if arch not in source.arch_translation else source.arch_translation[arch]
+                    metadata.arch = arch
                     packages.append(build_package(target, files, config, metadata))
 
         repo = Path(config.repobase/target.value)
