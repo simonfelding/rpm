@@ -1,0 +1,8 @@
+- name: "yq"
+  source: mikefarah/yq
+  files_regex: ^(?P<name>yq)_linux_(?P<arch>\w+)$
+  type: github
+  arch: [amd64]
+  arch_translation:
+    amd64: x86_64
+    arm64: aarch64

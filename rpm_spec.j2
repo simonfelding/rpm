@@ -1,0 +1,24 @@
+Summary: {{ metadata.summary }}
+Name: {{ metadata.name }}
+Version: {{ metadata.version }}
+Release: {{ metadata.release }}
+URL: {{ metadata.url }}
+Group: {{ metadata.group }}
+License: {{ metadata.license }}
+Packager: {{ metadata.packager }}
+Requires: {{ metadata.requires | join(', ') }}
+BuildRoot: {{ metadata.buildroot }}
+BuildArch: {{ metadata.arch }}
+
+%description
+{{ metadata.description }}
+
+%install
+mkdir -p %{buildroot}/usr/bin/
+cp {{ files | join(' ') }} %{buildroot}/usr/bin/
+
+%files
+{%- for file in files %}
+/usr/bin/{{ file.split('/')[-1] }}
+{%- endfor %}
+

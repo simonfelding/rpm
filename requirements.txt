@@ -1,0 +1,7 @@
+pydantic
+pydantic[email]
+requests
+requests_cache
+jinja2
+pyyaml
+rich

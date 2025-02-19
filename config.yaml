@@ -1,0 +1,6 @@
+maintainers:
+  - name: Simon
+    email: sife@adm.ku.dk
+targets:
+  - rpm
+repobase: "repo/"
