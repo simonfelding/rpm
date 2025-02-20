@@ -17,6 +17,7 @@ if __name__ == "__main__":
 
     for target in config.targets:
         packages = []
+        packages.append(build_package(target, files, config, metadata))
         for source in sources:
             logging.debug(f"platform.machine(): {platform.machine()}")
             for arch in source.arch if ("all" in source.arch or platform.machine() in source.arch) else [platform.machine()]:

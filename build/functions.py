@@ -14,6 +14,22 @@ def get_source(source: Source, metadata: Metadata) -> set[set[Path], Metadata]:
     workdir = Path(mkdtemp())
     output = []
 
+    def template(source: Source) -> list[Path]:
+        logging.debug(f".. Using template for {source.name}")
+        files = [Path(file) for file in source.files_regex.match(source.source)]
+        metadata.name       = source.name
+        metadata.summary    = source.extra.summary
+        metadata.version    = source.extra.version
+        metadata.url        = source.extra.url
+        
+        for file in files:
+            assert file.exists(), f".. {file.absolute()} does not exist"
+            with open(workdir/metadata.name, "w") as f:
+                jinja = jinja2.Environment()
+                j2 = jinja.from_string(file.read_text())
+                f.write(j2.render(metadata=metadata))
+                output.append(Path(f.name))
+
     def github(source: Source) -> list[Path]:
         release = get(f"https://api.github.com/repos/{source.source}/releases/latest").json()
         logging.debug(f".. got release {release['tag_name']}\n.. with assets {[asset['name'] for asset in release['assets']]}")
@@ -46,6 +62,8 @@ def get_source(source: Source, metadata: Metadata) -> set[set[Path], Metadata]:
     logging.info(f"Getting source files for {source.name}")
     if source.type == Srctype.github:
         github(source)
+    if source.type == Srctype.template:
+        template(source)
     
     logging.debug(f".. Got {len(output)} files: {output}")
     return (set(output), metadata)
@@ -75,6 +93,8 @@ def build_package(target: Targets, files: set[Path], config: Config, metadata: M
             file.chmod(644)
         if target == Targets.rpm:
             return rpm()
+        if target == Targets.template:
+            return template()
     except Exception as e:
         logging.error(f".. {e}")
     finally:

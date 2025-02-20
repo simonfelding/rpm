@@ -3,7 +3,7 @@ from pathlib import Path
 from enum import Enum
 from tempfile import mkdtemp
 from typing import Annotated
-from datetime import datetime, timezone
+from datetime import datetime
 from pydantic import BaseModel, BeforeValidator, EmailStr, HttpUrl, Field
 
 class Maintainer(BaseModel):
@@ -12,6 +12,7 @@ class Maintainer(BaseModel):
 
 class Srctype(str, Enum):
     github = "github"
+    template = "template"
     #file = "file"
 
 class Targets(Enum):
@@ -25,11 +26,13 @@ class Source(BaseModel):
     arch: list[str]
     name: str
     arch_translation: dict[str, str] = Field(default={"x86_64": "x86_64"})
+    extra: dict = Field(default={})
 
 class Config(BaseModel):
     maintainers: list[Maintainer]
     targets: list[Targets]
     repobase: Path
+    url: HttpUrl
 
 class Metadata(BaseModel):
     name: str = Field(default="Example package")
@@ -45,4 +48,5 @@ class Metadata(BaseModel):
     created_at: datetime = Field(default_factory=datetime.now)
     buildroot: Path = Field(default=Path(mkdtemp()))
     description: str = Field(default="Example description")
+    destination: str = Field(default="/usr/bin")
     changelog: list[dict[str, str]] = Field(default=[{"Thu Jun 17 2021 alex <alex@earthly.dev>": "initial example"}])

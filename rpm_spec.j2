@@ -14,11 +14,11 @@ BuildArch: {{ metadata.arch }}
 {{ metadata.description }}
 
 %install
-mkdir -p %{buildroot}/usr/bin/
-cp {{ files | join(' ') }} %{buildroot}/usr/bin/
+mkdir -p %{buildroot}{{ metadata.destination }}
+cp {{ files | join(' ') }} %{buildroot}{{ metadata.destination  }}
 
 %files
 {%- for file in files %}
-/usr/bin/{{ file.split('/')[-1] }}
+{{ metadata.destination }}{{ file.split('/')[-1] }}
 {%- endfor %}
 
