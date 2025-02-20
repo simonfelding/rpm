@@ -10,6 +10,9 @@ on:
     - cron: '0 5 * * *'
   push:
     branches: [ "main" ]
+    paths:
+      - 'Dockerfile'
+      - 'requirements.txt'
 
 env:
   REGISTRY: ghcr.io/simonfelding/rpm
