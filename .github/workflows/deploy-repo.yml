@@ -62,4 +62,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./repo/${{ matrix.repo }}
           force_orphan: true
-          cname: ${{ matrix.repo }}.ipi.dk
+          #cname: ${{ matrix.repo }}.ipi.dk
