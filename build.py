@@ -17,11 +17,11 @@ if __name__ == "__main__":
 
     for target in config.targets:
         packages = []
-        packages.append(build_package(target, files, config, metadata))
         for source in sources:
             logging.debug(f"platform.machine(): {platform.machine()}")
-            for arch in source.arch if ("all" in source.arch or platform.machine() in source.arch) else [platform.machine()]:
-                arch = arch if arch in ["all", platform.machine()] else "N/A"
+            for arch in source.arch:
+                if arch not in ["noarch", platform.machine()]:
+                    continue
                 metadata = Metadata()
                 metadata.packager = ", ".join([f"{maintainer.name} <{maintainer.email}>" for maintainer in config.maintainers])
                 metadata.arch = arch if arch not in source.arch_translation else source.arch_translation[arch]
@@ -33,7 +33,8 @@ if __name__ == "__main__":
 
         repo = Path(config.repobase/target.value)
         repo.mkdir(exist_ok=True, parents=True)
-        os.system(f"mv {''.join([str(package) for package in packages])} {repo}")
+        logging.debug(packages)
+        os.system(f"mv {' '.join([str(package) for package in packages])} {repo}")
         filelist = Path(mkdtemp())/"filelist"
         filelist.write_text("\n".join([str(package.name) for package in packages]))
         assert generate_repo(target, repo, filelist) == 0, f"Failed to generate {target} repository"

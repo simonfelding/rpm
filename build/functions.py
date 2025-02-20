@@ -16,19 +16,20 @@ def get_source(source: Source, metadata: Metadata) -> set[set[Path], Metadata]:
 
     def template(source: Source) -> list[Path]:
         logging.debug(f".. Using template for {source.name}")
-        files = [Path(file) for file in source.files_regex.match(source.source)]
+        logging.debug(source)
+        #assert source.files_regex.match(source.source)
+        file = Path(source.source)
         metadata.name       = source.name
-        metadata.summary    = source.extra.summary
-        metadata.version    = source.extra.version
-        metadata.url        = source.extra.url
+        metadata.summary    = source.extra['summary']
+        metadata.version    = source.extra['version']
+        metadata.url        = source.extra['url']
         
-        for file in files:
-            assert file.exists(), f".. {file.absolute()} does not exist"
-            with open(workdir/metadata.name, "w") as f:
-                jinja = jinja2.Environment()
-                j2 = jinja.from_string(file.read_text())
-                f.write(j2.render(metadata=metadata))
-                output.append(Path(f.name))
+        assert file.exists(), f".. {file.absolute()} does not exist"
+        with open(workdir/metadata.name, "w") as f:
+            jinja = jinja2.Environment()
+            j2 = jinja.from_string(file.read_text())
+            f.write(j2.render(metadata=metadata))
+            output.append(Path(f.name))
 
     def github(source: Source) -> list[Path]:
         release = get(f"https://api.github.com/repos/{source.source}/releases/latest").json()
@@ -80,7 +81,7 @@ def build_package(target: Targets, files: set[Path], config: Config, metadata: M
             f.write(spec)
             logging.debug(f".. Wrote specfile \n{spec}\n")
         
-        assert os.system(f"setarch {metadata.arch} rpmbuild --define '_topdir {workdir.absolute()}' --target {metadata.arch} -bb {specfile}") == 0, f"rpmbuild failed for {metadata.name}"
+        assert os.system(f"rpmbuild --define '_topdir {workdir.absolute()}' --target {metadata.arch} -bb {specfile}") == 0, f"rpmbuild failed for {metadata.name}"
         rpm = Path(f"{workdir.absolute()}/RPMS/{metadata.arch}/{metadata.name}-{metadata.version}-{metadata.release}.{metadata.arch}.rpm")
         assert rpm.exists(), f"{metadata.name} did not build to the right path"
         logging.debug(f".. Built {rpm} size {rpm.stat().st_size} bytes")
@@ -108,7 +109,7 @@ def generate_repo(target: Targets, repobase: Path, filelist: Path) -> int:
     if target == Targets.rpm:
         logging.info(f".. Generating repo for {target} in {repobase}")
         logging.debug(f".. Filelist: {filelist}\n.. Content:\n{filelist.read_text()}\n")
-        return rpm(repobase)
+        return rpm(repobase.absolute())
 
 def generate_index(filelist: Path, repo: Path) -> Path:
     logging.info(f".. Generating index.html")

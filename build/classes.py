@@ -32,7 +32,6 @@ class Config(BaseModel):
     maintainers: list[Maintainer]
     targets: list[Targets]
     repobase: Path
-    url: HttpUrl
 
 class Metadata(BaseModel):
     name: str = Field(default="Example package")

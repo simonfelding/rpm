@@ -2,7 +2,7 @@
   source: ./rpm_spec.j2
   type: template
   files_regex: ".*"
-  arch: [x86_64, aarch64]
+  arch: [noarch]
   destination: /etc/yum.repos.d/
   extra:
     url: "https://rpm.ipi.dk"
