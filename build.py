@@ -1,4 +1,4 @@
-import os, yaml, logging
+import os, yaml, logging, platform
 from pathlib import Path
 from tempfile import mkdtemp
 from rich.logging import RichHandler
@@ -18,7 +18,9 @@ if __name__ == "__main__":
     for target in config.targets:
         packages = []
         for source in sources:
-            for arch in source.arch:
+            logging.debug(f"platform.machine(): {platform.machine()}")
+            for arch in source.arch if ("all" in source.arch or platform.machine() in source.arch) else [platform.machine()]:
+                arch = arch if arch in ["all", platform.machine()] else "N/A"
                 metadata = Metadata()
                 metadata.packager = ", ".join([f"{maintainer.name} <{maintainer.email}>" for maintainer in config.maintainers])
                 metadata.arch = arch if arch not in source.arch_translation else source.arch_translation[arch]
@@ -34,6 +36,7 @@ if __name__ == "__main__":
         filelist = Path(mkdtemp())/"filelist"
         filelist.write_text("\n".join([str(package.name) for package in packages]))
         assert generate_repo(target, repo, filelist) == 0, f"Failed to generate {target} repository"
+        generate_index(filelist, repo)
         logging.info(f"== {target} repository generated at {repo}\n")
     
     files = [str(x) for x in config.repobase.rglob('*') if x.is_file()]

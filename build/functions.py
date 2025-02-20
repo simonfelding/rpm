@@ -89,3 +89,13 @@ def generate_repo(target: Targets, repobase: Path, filelist: Path) -> int:
         logging.info(f".. Generating repo for {target} in {repobase}")
         logging.debug(f".. Filelist: {filelist}\n.. Content:\n{filelist.read_text()}\n")
         return rpm(repobase)
+
+def generate_index(filelist: Path, repo: Path) -> Path:
+    logging.info(f".. Generating index.html")
+    jinja = jinja2.Environment()
+    template = jinja.from_string(Path("index.j2").read_text())
+    index = Path(repo/"index.html")
+    with open(index, "w") as f:
+        f.write(template.render(files=filelist.read_text().splitlines()))
+        logging.debug(f".. Wrote index.html\n{index.read_text()}\n")
+    return index
