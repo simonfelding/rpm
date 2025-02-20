@@ -20,16 +20,21 @@ concurrency:
   group: "pages"
   cancel-in-progress: false
 
+env:
+  IMAGE_NAME: ghcr.io/simonfelding/rpm/builder
+  
+
 jobs:
   # Single deploy job since we're just deploying
   build:
+    permissions:
+      pages: write
+      contents: read
+      packages: read
     strategy:
       matrix:
         repo:
           - rpm
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -41,7 +46,7 @@ jobs:
         with:
           platforms: arm64
       - name: Run rpmbuilder
-        run: "docker run --rm -v ${{ github.workspace }}:/build rpmbuilder"
+        run: "docker run --rm -v ${{ github.workspace }}:/build ${{ env.IMAGE_NAME }}"
       - name: Deploy page
         uses: peaceiris/actions-gh-pages@v4
         with:
