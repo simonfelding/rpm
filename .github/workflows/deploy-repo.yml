@@ -11,13 +11,7 @@ on:
       - "**/*.j2"
       - ".github/workflows/deploy-repo.yml"
   schedule:
-    - cron: "0 5 * * *"
-
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
-permissions:
-  contents: write
-  pages: write
-  id-token: write
+    - cron: "0 */6 * * *"
 
 # Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
 # However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
@@ -30,11 +24,9 @@ env:
   
 
 jobs:
-  # Single deploy job since we're just deploying
-  deploy:
+  build:
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -47,15 +39,22 @@ jobs:
           platforms: arm64
       - name: Run rpmbuilder
         run: "docker run --rm -v ${{ github.workspace }}:/build ${{ env.IMAGE_NAME }}"
-      - uses: actions/upload-artifact@v4
+      - name: Upload static files as artifact
+        id: deployment
+        uses: actions/upload-pages-artifact@v3 # or specific "vX.X.X" version tag for this action
         with:
-          path: repo
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-      - name: Deploy page
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./repo/
-          keep_files: true
-          cname: repo.ipi.dk
+          path: repo/
+
+  deploy:
+    permissions:
+      pages: write
+      id-token: write
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:      
+      - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
