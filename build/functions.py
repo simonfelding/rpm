@@ -114,9 +114,21 @@ def generate_repo(target: Targets, repobase: Path, filelist: Path) -> int:
 def generate_index(filelist: Path, repo: Path) -> Path:
     logging.info(f".. Generating index.html")
     jinja = jinja2.Environment()
-    template = jinja.from_string(Path("index.j2").read_text())
+    template = jinja.from_string(Path("file_index.j2").read_text())
     index = Path(repo/"index.html")
     with open(index, "w") as f:
         f.write(template.render(files=filelist.read_text().splitlines()))
         logging.debug(f".. Wrote index.html\n{index.read_text()}\n")
     return index
+
+def generate_setup_instructions(files: list, root: Path) -> Path:
+    setup = Path(root/"index.html")
+    logging.debug(f".. Generating setup instructions")
+    jinja = jinja2.Environment()
+    template = jinja.from_string(Path("setup_instructions.j2").read_text())
+    rpm_repofile = [file for file in files if re.match(r"^the.repo.*\.rpm$", file)][0]
+    assert Path(rpm_repofile).exists(), f"The repofile from the filelist does not exist: {rpm_repofile}"
+    with open(setup, "w") as f:
+        f.write(template.render(rpm_repofile=rpm_repofile))
+        logging.info(f".. Wrote {setup}\n")
+    return setup

@@ -1,11 +1,11 @@
-- name: custom.repo
+- name: the.repo # it must be the.repo to be recognized by the setup_instructions.j2 template (as the.repo.*.rpm).
   source: ./rpm_spec.j2
   type: template
   files_regex: ".*"
   arch: [noarch]
   destination: /etc/yum.repos.d/
   extra:
-    url: "https://rpm.ipi.dk"
+    url: "https://repo.ipi.dk/rpm/"
     summary: "simonfelding's extra utilities - $basearch"
     version: "1"
 

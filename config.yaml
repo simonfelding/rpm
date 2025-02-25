@@ -4,3 +4,4 @@ maintainers:
     email: sife@adm.ku.dk
 targets:
   - rpm
+repo_url: "https://repo.ipi.dk/" # This is the base URL for the repositories. The url does not include the targets.

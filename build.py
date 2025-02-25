@@ -42,6 +42,8 @@ if __name__ == "__main__":
         logging.info(f"== {target} repository generated at {repo}\n")
     
     files = [str(x) for x in config.repobase.rglob('*') if x.is_file()]
+    root_index = generate_setup_instructions(files, config.repobase, config.repo_url)
+    files = files.append(str(root_index))
     if os.environ.get("DO_PUSH"):
         logging.info("== Pushing to git")
         if os.system(f"git add {" ".join(files)}"):
