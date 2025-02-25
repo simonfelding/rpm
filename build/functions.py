@@ -121,7 +121,7 @@ def generate_index(filelist: Path, repo: Path) -> Path:
         logging.debug(f".. Wrote index.html\n{index.read_text()}\n")
     return index
 
-def generate_setup_instructions(files: list, root: Path) -> Path:
+def generate_setup_instructions(files: list, root: Path, repo_url: str) -> Path:
     setup = Path(root/"index.html")
     logging.debug(f".. Generating setup instructions")
     jinja = jinja2.Environment()
@@ -129,6 +129,6 @@ def generate_setup_instructions(files: list, root: Path) -> Path:
     rpm_repofile = [file for file in files if re.match(r"^the.repo.*\.rpm$", file)][0]
     assert Path(rpm_repofile).exists(), f"The repofile from the filelist does not exist: {rpm_repofile}"
     with open(setup, "w") as f:
-        f.write(template.render(rpm_repofile=rpm_repofile))
+        f.write(template.render(rpm_repofile=rpm_repofile, repo_url=repo_url))
         logging.info(f".. Wrote {setup}\n")
     return setup
