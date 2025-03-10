@@ -23,7 +23,7 @@ def get_source(source: Source, metadata: Metadata) -> set[set[Path], Metadata]:
         metadata.summary    = source.extra['summary']
         metadata.version    = source.extra['version']
         metadata.url        = source.extra['url']
-        
+
         assert file.exists(), f".. {file.absolute()} does not exist"
         with open(workdir/metadata.name, "w") as f:
             jinja = jinja2.Environment()
@@ -34,7 +34,7 @@ def get_source(source: Source, metadata: Metadata) -> set[set[Path], Metadata]:
     def github(source: Source) -> list[Path]:
         release = get(f"https://api.github.com/repos/{source.source}/releases/latest").json()
         logging.debug(f".. got release {release['tag_name']}\n.. with assets {[asset['name'] for asset in release['assets']]}")
-        
+
         metadata.name = source.name
         metadata.summary = release["name"]
         metadata.version = re.sub(r"^v(\d)", r"\1" , release["tag_name"], count=1) # if version starts with v and a number, remove the v.
@@ -58,14 +58,14 @@ def get_source(source: Source, metadata: Metadata) -> set[set[Path], Metadata]:
                         logging.debug(f".. Skipping {asset['name']} because it's not for {metadata.arch}")
         else:
             logging.debug(f".. {source.name} is up to date")
-    
+
     logging.debug(f"SOURCE: {source}")
     logging.info(f"Getting source files for {source.name}")
     if source.type == Srctype.github:
         github(source)
     if source.type == Srctype.template:
         template(source)
-    
+
     logging.debug(f".. Got {len(output)} files: {output}")
     return (set(output), metadata)
 
@@ -80,7 +80,7 @@ def build_package(target: Targets, files: set[Path], config: Config, metadata: M
             spec = template.render(files=[str(file.absolute()) for file in files], config=config, metadata=metadata)
             f.write(spec)
             logging.debug(f".. Wrote specfile \n{spec}\n")
-        
+
         assert os.system(f"rpmbuild --define '_topdir {workdir.absolute()}' --target {metadata.arch} -bb {specfile}") == 0, f"rpmbuild failed for {metadata.name}"
         rpm = Path(f"{workdir.absolute()}/RPMS/{metadata.arch}/{metadata.name}-{metadata.version}-{metadata.release}.{metadata.arch}.rpm")
         assert rpm.exists(), f"{metadata.name} did not build to the right path"
@@ -105,7 +105,7 @@ def generate_repo(target: Targets, repobase: Path, filelist: Path) -> int:
     def rpm(repo: Path) -> Path:
         logging.debug(f".. repo: {repo}")
         return os.system(f"createrepo -i {str(filelist.absolute())} --update {repo} --skip-stat")
-    
+
     if target == Targets.rpm:
         logging.info(f".. Generating repo for {target} in {repobase}")
         logging.debug(f".. Filelist: {filelist}\n.. Content:\n{filelist.read_text()}\n")
